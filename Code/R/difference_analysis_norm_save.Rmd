@@ -1,0 +1,252 @@
+---
+output:
+  html_document:
+    toc: true
+---
+
+```{r lib}
+source("source_functions.R")
+```
+
+# Load data
+```{r g1_load}
+cont_var <- c("time_to_cpap_start", "alder", "bmi", "hba1c", "GFR", "kolesterol", "systoliskt", "DispInkKEHB04", "Raks_AndelArblosInk", "Raks_AndelSjukInk", "Raks_AndelEkBisInk")
+
+# Load data
+tind_load <- load_data("/vault/marja987_amed/subsets_thesis_marijn/Data/ndr_survival_times_train.csv",
+                       "/vault/marja987_amed/subsets_thesis_marijn/Data/ndr_survival_times_test.csv",
+                       cont_var, tv=F)
+df_survival_times_train <- tind_load$train
+df_survival_times_test <- tind_load$test
+
+death_load <- load_data("/vault/marja987_amed/subsets_thesis_marijn/Data/death_tv_train.csv",
+                        "/vault/marja987_amed/subsets_thesis_marijn/Data/death_tv_test.csv",
+                        setdiff(cont_var, c("time_to_cpap_start")))
+df_death_tv_train <- death_load$train
+df_death_tv_test <- death_load$test
+
+ami_load <- load_data("/vault/marja987_amed/subsets_thesis_marijn/Data/ami_tv_train.csv",
+                      "/vault/marja987_amed/subsets_thesis_marijn/Data/ami_tv_test.csv",
+                       setdiff(cont_var, c("time_to_cpap_start")))
+df_ami_tv_train <- ami_load$train
+df_ami_tv_test <- ami_load$test
+
+stroke_load <- load_data("/vault/marja987_amed/subsets_thesis_marijn/Data/stroke_tv_train.csv",
+                         "/vault/marja987_amed/subsets_thesis_marijn/Data/stroke_tv_test.csv",
+                         setdiff(cont_var, c("time_to_cpap_start")))
+df_stroke_tv_train <- stroke_load$train
+df_stroke_tv_test <- stroke_load$test
+```
+
+```{r, g2_load}
+cont_var <- c("time_to_cpap_start", "alder", "bmi", "hba1c", "GFR", "kolesterol", "systoliskt", "DispInkKEHB04", "Raks_AndelArblosInk", "Raks_AndelSjukInk", "Raks_AndelEkBisInk")
+
+cont_var_sleep <- c("time_to_cpap_start", "alder", "bmi", "hba1c", "GFR", "kolesterol", "systoliskt", "DispInkKEHB04", "Raks_AndelArblosInk", "Raks_AndelSjukInk", "Raks_AndelEkBisInk", "IV_AHI", "IV_ODI", "IV_AverageSaturation")
+
+# Load data
+tind_sub_load <- load_data("/vault/marja987_amed/subsets_thesis_marijn/Data/ndr_sesar_survival_times_train.csv",
+                           "/vault/marja987_amed/subsets_thesis_marijn/Data/ndr_sesar_survival_times_test.csv",
+                           cont_var_sleep, tv=F)
+df_survival_times_sub_train <- tind_sub_load$train
+df_survival_times_sub_test <- tind_sub_load$test
+
+death_sub_load <- load_data("/vault/marja987_amed/subsets_thesis_marijn/Data/death_sub_tv_train.csv",
+                            "/vault/marja987_amed/subsets_thesis_marijn/Data/death_sub_tv_test.csv",
+                            setdiff(cont_var_sleep, c("time_to_cpap_start")))
+df_death_sub_tv_train <- death_sub_load$train
+df_death_sub_tv_test <- death_sub_load$test
+
+ami_sub_load <- load_data("/vault/marja987_amed/subsets_thesis_marijn/Data/ami_sub_tv_train.csv",
+                          "/vault/marja987_amed/subsets_thesis_marijn/Data/ami_sub_tv_train.csv",
+                          setdiff(cont_var_sleep, c("time_to_cpap_start")))
+df_ami_sub_tv_train <- ami_sub_load$train
+df_ami_sub_tv_test <- ami_sub_load$test
+
+stroke_sub_load <- load_data("/vault/marja987_amed/subsets_thesis_marijn/Data/stroke_sub_tv_train.csv",
+                             "/vault/marja987_amed/subsets_thesis_marijn/Data/stroke_sub_tv_test.csv",
+                             setdiff(cont_var_sleep, c("time_to_cpap_start")))
+df_stroke_sub_tv_train <- stroke_sub_load$train
+df_stroke_sub_tv_test <- stroke_sub_load$test
+```
+
+# Forms difference
+## Death
+### Group 2 - within tdep
+```{r}
+form_death_g2_tdep_spl <- Surv(start, stop, event) ~ factor(cpap_treated) + rcs(alder) + rcs(GFR) + rcs(systoliskt) + rcs(IV_AverageSaturation) + factor(sex) + factor(HushallsTyp_RTB) + rcs(bmi) + factor(stroke_history) + factor(antihypertensive_comb) + factor(Sun2000niva_old) + factor(ami_history) + rcs(Raks_AndelSjukInk) + rcs(hba1c) + factor(rokare) + rcs(Raks_AndelEkBisInk) + rcs(DispInkKEHB04) + factor(FodelseLand_EU27_2020) + factor(antithrombotic_agents) + factor(lipid_modifying_agents) + rcs(alder):rcs(GFR) + rcs(GFR):factor(cpap_treated) + factor(cpap_treated):factor(antihypertensive_comb)
+
+form_death_g2_tdep_cat <- Surv(start, stop, event) ~ factor(cpap_treated) + rcs(alder) + factor(GFR_high) + rcs(IV_AverageSaturation) + factor(sex) + factor(HushallsTyp_RTB) + rcs(bmi) + factor(antithrombotic_agents) + factor(Sun2000niva_old) + factor(systoliskt_high) + factor(stroke_history) + factor(antihypertensive_comb) +  + factor(ami_history) + rcs(Raks_AndelSjukInk) + rcs(DispInkKEHB04) + rcs(Raks_AndelEkBisInk) + factor(rokare) + factor(lipid_modifying_agents) + factor(FodelseLand_EU27_2020) + rcs(alder):factor(GFR_high) + factor(cpap_treated):factor(antihypertensive_comb) + factor(GFR_high):factor(cpap_treated)
+
+cph_spl_wo_hba1c <- coxph(update(form_death_g2_tdep_spl, ". ~ . - rcs(hba1c)"), df_death_sub_tv_train)
+cph_cat_w_hba1c <- coxph(update(form_death_g2_tdep_cat, ". ~ . + factor(hba1c_high)"), df_death_sub_tv_train)
+
+print("--- ANALYSIS WITHIN TDEP G2 ---")
+print("--- SPLINE W/O HBA1C ---")
+print(summary(cph_spl_wo_hba1c))
+print("--- CAT W HBA1C ---")
+print(summary(cph_cat_w_hba1c))
+
+termplot(cph_spl_wo_hba1c)
+```
+
+### Group 2 - between tind/tdep
+```{r}
+
+```
+
+## AMI
+### Group 1
+```{r}
+form_ami_g1_tind_spl <- Surv(time_to_ami, ami) ~ factor(cpap_treated) + rcs(alder) + factor(ami_history) + factor(antithrombotic_agents) + rcs(hba1c) + factor(sex) + rcs(GFR) + rcs(time_to_cpap_start) + factor(rokare) + rcs(DispInkKEHB04) + rcs(kolesterol) + rcs(Raks_AndelSjukInk) + rcs(systoliskt) + rcs(Raks_AndelEkBisInk) + factor(antihypertensive_comb) + factor(Sun2000niva_old) + factor(lipid_modifying_agents) + factor(FodelseLand_EU27_2020) + rcs(Raks_AndelArblosInk) + rcs(bmi) + factor(Civil) + rcs(alder):rcs(GFR) + factor(cpap_treated):factor(antithrombotic_agents)
+
+form_ami_g1_tdep_spl <- Surv(start, stop, event) ~ factor(cpap_treated) + rcs(alder) + factor(sex) + rcs(bmi) + factor(rokare) + factor(ami_history) + factor(stroke_history) + factor(Civil) + factor(HushallsTyp_RTB) + factor(Sun2000niva_old) + rcs(DispInkKEHB04) + rcs(Raks_AndelArblosInk) + rcs(Raks_AndelSjukInk) + rcs(Raks_AndelEkBisInk) + factor(FodelseLand_EU27_2020) + factor(antithrombotic_agents) + factor(antihypertensive_comb) + factor(lipid_modifying_agents) + rcs(hba1c) + rcs(GFR) + rcs(kolesterol) + rcs(systoliskt) + factor(cpap_treated):factor(antithrombotic_agents) + factor(cpap_treated):factor(antihypertensive_comb) + factor(cpap_treated):factor(lipid_modifying_agents) + rcs(alder):rcs(bmi) + rcs(alder):rcs(GFR) + rcs(GFR):factor(cpap_treated)
+
+cph_tdep_w_tind <- coxph(update(form_ami_g1_tind_spl, "Surv(start, stop, event) ~ . - rcs(time_to_cpap_start)"), df_ami_tv_train)
+cph_tind_w_tdep <- coxph(update(form_ami_g1_tdep_spl, "Surv(time_to_ami, ami) ~ ."), df_survival_times_train)
+
+print("--- TIND FORMULA WITH TDEP DATA ---")
+print(summary(cph_tdep_w_tind))
+print("--- TDEP FORMULA WITH TIND DATA ---")
+print(summary(cph_tind_w_tdep))
+
+```
+
+### Group 2
+```{r}
+form_ami_g2_tind_spl <- Surv(time_to_ami, ami) ~ factor(cpap_treated) + factor(antithrombotic_agents) + factor(ami_history) + rcs(alder) + factor(sex) + rcs(hba1c) + factor(rokare) + rcs(time_to_cpap_start) + factor(lipid_modifying_agents) + rcs(IV_AverageSaturation) + factor(antihypertensive_comb) + rcs(DispInkKEHB04)
+
+form_ami_g2_tdep_spl <- Surv(start, stop, event) ~ factor(cpap_treated) + factor(antithrombotic_agents) + factor(ami_history) + rcs(alder) + factor(sex) + rcs(hba1c) + rcs(systoliskt) + rcs(GFR) + factor(rokare) + factor(lipid_modifying_agents) + rcs(IV_AverageSaturation) + rcs(kolesterol) + factor(antihypertensive_comb) + rcs(DispInkKEHB04) + factor(cpap_treated):factor(antithrombotic_agents) + factor(cpap_treated):factor(antihypertensive_comb)
+
+cph_tdep_w_tind <- coxph(update(form_ami_g2_tind_spl, "Surv(start, stop, event) ~ . - rcs(time_to_cpap_start)"), df_ami_sub_tv_train)
+cph_tind_w_tdep <- coxph(update(form_ami_g2_tdep_spl, "Surv(time_to_ami, ami) ~ ."), df_survival_times_sub_train)
+
+print("--- TIND FORMULA WITH TDEP DATA ---")
+print(summary(cph_tdep_w_tind))
+print("--- TDEP FORMULA WITH TIND DATA ---")
+print(summary(cph_tind_w_tdep))
+```
+
+## Stroke
+### Group 1
+```{r}
+form_stroke_g1_tind_spl <- Surv(time_to_stroke, stroke) ~ factor(cpap_treated) + rcs(alder) + factor(stroke_history) + factor(antithrombotic_agents) + rcs(hba1c) + rcs(time_to_cpap_start) + factor(rokare) + rcs(systoliskt) + factor(sex) + rcs(GFR) + rcs(Raks_AndelSjukInk) + rcs(DispInkKEHB04) + rcs(kolesterol) + rcs(Raks_AndelEkBisInk) + rcs(Raks_AndelArblosInk) + rcs(bmi) + factor(antihypertensive_comb) + factor(FodelseLand_EU27_2020) + factor(Sun2000niva_old) + factor(lipid_modifying_agents) + factor(Civil) + rcs(alder):rcs(GFR) + factor(cpap_treated):factor(lipid_modifying_agents)
+
+form_stroke_g1_tdep_spl <- Surv(start, stop, event) ~ factor(cpap_treated) + rcs(alder) + factor(sex) + rcs(bmi) + factor(rokare) + factor(ami_history) + factor(stroke_history) + factor(Civil) + factor(HushallsTyp_RTB) + factor(Sun2000niva_old) + rcs(DispInkKEHB04) + rcs(Raks_AndelArblosInk) + rcs(Raks_AndelSjukInk) + rcs(Raks_AndelEkBisInk) + factor(FodelseLand_EU27_2020) + factor(antithrombotic_agents) + factor(antihypertensive_comb) + factor(lipid_modifying_agents) + rcs(hba1c) + rcs(GFR) + rcs(kolesterol) + rcs(systoliskt) + factor(cpap_treated):factor(antithrombotic_agents) + factor(cpap_treated):factor(antihypertensive_comb) + factor(cpap_treated):factor(lipid_modifying_agents) + rcs(alder):rcs(bmi) + rcs(alder):rcs(GFR) + rcs(GFR):factor(cpap_treated)
+
+cph_tdep_w_tind <- coxph(update(form_stroke_g1_tind_spl, "Surv(start, stop, event) ~ . - rcs(time_to_cpap_start)"), df_stroke_tv_train)
+cph_tind_w_tdep <- coxph(update(form_stroke_g1_tdep_spl, "Surv(time_to_stroke, stroke) ~ ."), df_survival_times_train)
+
+print("--- TIND FORMULA WITH TDEP DATA ---")
+print(summary(cph_tdep_w_tind))
+print("--- TDEP FORMULA WITH TIND DATA ---")
+print(summary(cph_tind_w_tdep))
+```
+
+### Group 2
+```{r}
+form_stroke_g2_tind_spl <- Surv(time_to_stroke, stroke) ~ factor(cpap_treated) + rcs(alder) + factor(stroke_history) + factor(antithrombotic_agents) + rcs(DispInkKEHB04) + rcs(hba1c) + factor(rokare) + rcs(systoliskt) + factor(cpap_treated):factor(antithrombotic_agents)
+
+form_stroke_g2_tdep_spl <- Surv(start, stop, event) ~ factor(cpap_treated) + rcs(alder) + factor(stroke_history) + factor(antithrombotic_agents) + rcs(DispInkKEHB04) + rcs(systoliskt) + rcs(hba1c) + factor(rokare) + factor(sex) + factor(cpap_treated):factor(antithrombotic_agents)
+
+cph_tdep_w_tind <- coxph(update(form_stroke_g2_tind_spl, "Surv(start, stop, event) ~ ."), df_stroke_sub_tv_train)
+cph_tind_w_tdep <- coxph(update(form_stroke_g2_tdep_spl, "Surv(time_to_stroke, stroke) ~ ."), df_survival_times_sub_train)
+
+print("--- TIND FORMULA WITH TDEP DATA ---")
+print(summary(cph_tdep_w_tind))
+print("--- TDEP FORMULA WITH TIND DATA ---")
+print(summary(cph_tind_w_tdep))
+```
+
+# Data difference
+## AMI
+### Group 1
+```{r}
+cph_ami_tv_as_tind <- coxph(update(form_ami_g1_tdep_spl, "Surv(stop, event) ~ ."), df_ami_tv_train)
+print(summary(cph_ami_tv_as_tind))
+```
+
+### Group 2
+```{r}
+cph_ami_tv_as_tind <- coxph(update(form_ami_g2_tdep_spl, "Surv(stop, event) ~ ."), df_ami_sub_tv_train)
+print(summary(cph_ami_tv_as_tind))
+```
+
+## Stroke
+### Group 1
+```{r}
+cph_stroke_tv_as_tind <- coxph(update(form_stroke_g1_tdep_spl, "Surv(stop, event) ~ ."), df_stroke_tv_train)
+print(summary(cph_stroke_tv_as_tind))
+```
+
+### Group 2
+```{r}
+cph_stroke_tv_as_tind <- coxph(update(form_stroke_g2_tdep_spl, "Surv(stop, event) ~ ."), df_stroke_sub_tv_train)
+print(summary(cph_stroke_tv_as_tind))
+```
+
+# One tv var out
+## Death
+### Group 2
+```{r}
+var_set <- c("hba1c", "GFR", "systoliskt", "kolesterol", "rokare", "bmi")
+
+for (var in var_set) {
+  df_train <- load_data(paste0("/vault/marja987_amed/subsets_thesis_marijn/Data/death_tv_min_", var, "_sub_train.csv"), "", setdiff(cont_var_sleep, "time_to_cpap_start"))
+  df_train <- df_train$train
+  
+  cph <- coxph(form_death_g2_tdep_spl, df_train)
+  print(paste0("--- LEAVING OUT ", var, " ---"))
+  print(summary(cph))
+}
+```
+
+## AMI
+### Group 1
+```{r}
+for (var in var_set) {
+  df_train <- load_data(paste0("/vault/marja987_amed/subsets_thesis_marijn/Data/ami_tv_min_", var, "_train.csv"), "", setdiff(cont_var, "time_to_cpap_start"))
+  df_train <- df_train$train
+  
+  cph <- coxph(form_ami_g1_tdep_spl, df_train)
+  print(paste0("--- LEAVING OUT ", var, " ---"))
+  print(summary(cph))
+}
+```
+
+### Group 2
+```{r}
+for (var in var_set) {
+  df_train <- load_data(paste0("/vault/marja987_amed/subsets_thesis_marijn/Data/ami_tv_min_", var, "_sub_train.csv"), "", setdiff(cont_var_sleep, "time_to_cpap_start"))
+  df_train <- df_train$train
+  
+  cph <- coxph(form_ami_g2_tdep_spl, df_train)
+  print(paste0("--- LEAVING OUT ", var, " ---"))
+  print(summary(cph))
+}
+```
+
+## Stroke
+### Group 1
+```{r}
+for (var in var_set) {
+  df_train <- load_data(paste0("/vault/marja987_amed/subsets_thesis_marijn/Data/stroke_tv_min_", var, "_train.csv"), "", setdiff(cont_var, "time_to_cpap_start"))
+  df_train <- df_train$train
+  
+  cph <- coxph(form_stroke_g1_tdep_spl, df_train)
+  print(paste0("--- LEAVING OUT ", var, " ---"))
+  print(summary(cph))
+}
+```
+
+### Group 2
+```{r}
+for (var in var_set) {
+  df_train <- load_data(paste0("/vault/marja987_amed/subsets_thesis_marijn/Data/stroke_tv_min_", var, "_sub_train.csv"), "", setdiff(cont_var_sleep, "time_to_cpap_start"))
+  df_train <- df_train$train
+  
+  cph <- coxph(form_stroke_g2_tdep_spl, df_train)
+  print(paste0("--- LEAVING OUT ", var, " ---"))
+  print(summary(cph))
+}
+```
+

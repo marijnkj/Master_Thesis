@@ -1,0 +1,79 @@
+---
+output:
+  html_document:
+    toc: true
+---
+
+```{r lib}
+source("source_functions.R")
+```
+
+
+
+# Load data
+```{r g1_load}
+cont_var <- c("time_to_cpap_start", "alder", "bmi", "hba1c", "GFR", "kolesterol", "systoliskt", "DispInkKEHB04", "Raks_AndelArblosInk", "Raks_AndelSjukInk", "Raks_AndelEkBisInk")
+
+# Load data
+tind_load <- load_data("/vault/marja987_amed/subsets_thesis_marijn/Data/ndr_survival_times_train.csv",
+                       "/vault/marja987_amed/subsets_thesis_marijn/Data/ndr_survival_times_test.csv",
+                       cont_var, tv=F)
+df_survival_times_train <- tind_load$train
+df_survival_times_test <- tind_load$test
+```
+
+```{r, g2_load}
+cont_var <- c("time_to_cpap_start", "alder", "bmi", "hba1c", "GFR", "kolesterol", "systoliskt", "DispInkKEHB04", "Raks_AndelArblosInk", "Raks_AndelSjukInk", "Raks_AndelEkBisInk")
+
+cont_var_sleep <- c("time_to_cpap_start", "alder", "bmi", "hba1c", "GFR", "kolesterol", "systoliskt", "DispInkKEHB04", "Raks_AndelArblosInk", "Raks_AndelSjukInk", "Raks_AndelEkBisInk", "IV_AHI", "IV_ODI", "IV_AverageSaturation")
+
+# Load data
+tind_sub_load <- load_data("/vault/marja987_amed/subsets_thesis_marijn/Data/ndr_sesar_survival_times_train.csv",
+                           "/vault/marja987_amed/subsets_thesis_marijn/Data/ndr_sesar_survival_times_test.csv",
+                           cont_var_sleep, tv=F)
+df_survival_times_sub_train <- tind_sub_load$train
+df_survival_times_sub_test <- tind_sub_load$test
+```
+
+# Generate formulas
+```{r}
+list_all_forms <- generate_formulas()
+list_forms <- list_all_forms[[1]]
+list_forms_sleep <- list_all_forms[[2]]
+```
+
+# Death
+## Time-independent
+### Group 1
+```{r g1_death_tind}
+run_models(c(list_forms[["form_death_tind_spl"]], list_forms[["form_death_tind_cat"]]), df_survival_times_train, df_test=df_survival_times_test, "time_to_death", "death", cont_var, "prof_death_ind_g1.html")
+```
+
+### Group 2
+```{r, g2_death_tind}
+run_models(c(list_forms_sleep[["form_death_tind_spl"]], list_forms_sleep[["form_death_tind_cat"]]), df_survival_times_sub_train, df_survival_times_sub_test, "time_to_death", "death", cont_var, "prof_death_ind_g2.html", bigd=F)
+```
+
+# AMI
+## Time-independent
+### Group 1
+```{r, g1_ami_tind}
+run_models(c(list_forms[["form_ami_tind_spl"]], list_forms[["form_ami_tind_cat"]]), df_survival_times_train, df_survival_times_test, "time_to_ami", "ami", cont_var, "prof_ami_ind_g1.html")
+```
+
+### Group 2
+```{r, g2_ami_tind}
+run_models(c(list_forms_sleep[["form_ami_tind_spl"]], list_forms_sleep[["form_ami_tind_cat"]]), df_survival_times_sub_train, df_survival_times_sub_test, "time_to_ami", "ami", cont_var, "prof_ami_ind_g2.html", bigd=F)
+```
+
+# Stroke
+## Time-independent
+### Group 1
+```{r, g1_stroke_tind}
+run_models(c(list_forms[["form_stroke_tind_spl"]], list_forms[["form_stroke_tind_cat"]]), df_survival_times_train, df_survival_times_test, "time_to_stroke", "stroke", cont_var, "prof_stroke_ind_g1.html")
+```
+
+### Group 2
+```{r, g2_stroke_tind}
+run_models(c(list_forms[["form_stroke_tind_spl"]], list_forms[["form_stroke_tind_cat"]]), df_survival_times_sub_train, df_survival_times_sub_test, "time_to_stroke", "stroke", cont_var_sleep, "prof_stroke_ind_g2.html", bigd=F)
+```

@@ -1,0 +1,99 @@
+---
+output:
+  html_document:
+    toc: true
+---
+
+```{r lib}
+source("source_functions.R")
+```
+
+# Load data
+```{r g1_load}
+cont_var <- c("time_to_cpap_start", "alder", "bmi", "hba1c", "GFR", "kolesterol", "systoliskt", "DispInkKEHB04", "Raks_AndelArblosInk", "Raks_AndelSjukInk", "Raks_AndelEkBisInk")
+
+death_load <- load_data("/vault/marja987_amed/subsets_thesis_marijn/Data/death_tv_train.csv",
+                        "/vault/marja987_amed/subsets_thesis_marijn/Data/death_tv_test.csv",
+                        setdiff(cont_var, c("time_to_cpap_start")))
+df_death_tv_train <- death_load$train
+df_death_tv_test <- death_load$test
+
+ami_load <- load_data("/vault/marja987_amed/subsets_thesis_marijn/Data/ami_tv_train.csv",
+                      "/vault/marja987_amed/subsets_thesis_marijn/Data/ami_tv_test.csv",
+                       setdiff(cont_var, c("time_to_cpap_start")))
+df_ami_tv_train <- ami_load$train
+df_ami_tv_test <- ami_load$test
+
+stroke_load <- load_data("/vault/marja987_amed/subsets_thesis_marijn/Data/stroke_tv_train.csv",
+                         "/vault/marja987_amed/subsets_thesis_marijn/Data/stroke_tv_test.csv",
+                         setdiff(cont_var, c("time_to_cpap_start")))
+df_stroke_tv_train <- stroke_load$train
+df_stroke_tv_test <- stroke_load$test
+```
+
+```{r, g2_load}
+cont_var <- c("time_to_cpap_start", "alder", "bmi", "hba1c", "GFR", "kolesterol", "systoliskt", "DispInkKEHB04", "Raks_AndelArblosInk", "Raks_AndelSjukInk", "Raks_AndelEkBisInk")
+
+cont_var_sleep <- c("time_to_cpap_start", "alder", "bmi", "hba1c", "GFR", "kolesterol", "systoliskt", "DispInkKEHB04", "Raks_AndelArblosInk", "Raks_AndelSjukInk", "Raks_AndelEkBisInk", "IV_AHI", "IV_ODI", "IV_AverageSaturation")
+
+death_sub_load <- load_data("/vault/marja987_amed/subsets_thesis_marijn/Data/death_sub_tv_train.csv",
+                            "/vault/marja987_amed/subsets_thesis_marijn/Data/death_sub_tv_test.csv",
+                            setdiff(cont_var_sleep, c("time_to_cpap_start")))
+df_death_sub_tv_train <- death_sub_load$train
+df_death_sub_tv_test <- death_sub_load$test
+
+ami_sub_load <- load_data("/vault/marja987_amed/subsets_thesis_marijn/Data/ami_sub_tv_train.csv",
+                          "/vault/marja987_amed/subsets_thesis_marijn/Data/ami_sub_tv_train.csv",
+                          setdiff(cont_var_sleep, c("time_to_cpap_start")))
+df_ami_sub_tv_train <- ami_sub_load$train
+df_ami_sub_tv_test <- ami_sub_load$test
+
+stroke_sub_load <- load_data("/vault/marja987_amed/subsets_thesis_marijn/Data/stroke_sub_tv_train.csv",
+                             "/vault/marja987_amed/subsets_thesis_marijn/Data/stroke_sub_tv_test.csv",
+                             setdiff(cont_var_sleep, c("time_to_cpap_start")))
+df_stroke_sub_tv_train <- stroke_sub_load$train
+df_stroke_sub_tv_test <- stroke_sub_load$test
+```
+
+# Generate formulas
+```{r}
+list_all_forms <- generate_formulas()
+list_forms <- list_all_forms[[1]]
+list_forms_sleep <- list_all_forms[[2]]
+```
+
+# Death
+## Time-dependent
+### Group 1
+```{r, g1_death_tdep}
+run_models(c(list_forms[["form_tdep_spl"]], list_forms[["form_tdep_cat"]]), df_death_tv_train, df_death_tv_test, "stop", "event", cont_var, "prof_death_dep_g1.html")
+```
+
+### Group 2
+```{r, g2_death_tdep}
+run_models(c(list_forms_sleep[["form_tdep_spl"]], list_forms_sleep[["form_tdep_cat"]]), df_death_sub_tv_train, df_death_sub_tv_test, "stop", "event", cont_var, "prof_death_dep_g2.html", bigd=F)
+```
+
+# AMI
+## Time-dependent
+### Group 1
+```{r, g1_ami_tdep}
+run_models(c(list_forms[["form_tdep_spl"]], list_forms[["form_tdep_cat"]]), df_ami_tv_train, df_ami_tv_test, "stop", "event", cont_var, "prof_ami_dep_g1.html")
+```
+
+### Group 2
+```{r, g2_ami_tdep}
+run_models(c(list_forms_sleep[["form_tdep_spl"]], list_forms_sleep[["form_tdep_cat"]]), df_ami_sub_tv_train, df_ami_sub_tv_test, "stop", "event", cont_var, "prof_ami_dep_g2.html", bigd=F)
+```
+
+# Stroke
+## Time-dependent
+### Group 1
+```{r, g1_stroke_tdep}
+run_models(c(list_forms[["form_tdep_spl"]], list_forms[["form_tdep_cat"]]), df_stroke_tv_train, df_stroke_tv_test, "stop", "event", cont_var, "prof_stroke_dep_g1.html")
+```
+
+### Group 2
+```{r, g2_stroke_tdep}
+run_models(c(list_forms_sleep[["form_tdep_spl"]], list_forms_sleep[["form_tdep_cat"]]), df_stroke_sub_tv_train, df_stroke_sub_tv_test, "stop", "event", cont_var, "prof_stroke_dep_g2.html", bigd=F)
+```
